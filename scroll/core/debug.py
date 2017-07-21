@@ -46,9 +46,9 @@ def clear():
 
 def error(msg, reason=None):
 	if reason:
-		logging.debug(f'[!] - {msg} ({reason})')
+		logging.error(f'[!] - {msg} ({reason})')
 	else:
-		logging.debug('[!] - ' + msg)
+		logging.error('[!] - ' + msg)
 
 def error_exit(msg):
 	raise SystemExit('[!] - ' + msg)
@@ -68,7 +68,7 @@ def irc(msg):
 
 def setup_logger():
 	logger = logging.getLogger()
-	logger.setLevel(logging.DEBUG)
+	logger.setLevel(logging.NOTSET)
 	format = logging.Formatter('%(asctime)s | %(message)s', '%I:%M:%S')
 	stream_handler = logging.StreamHandler(sys.stdout)
 	stream_handler.setFormatter(format)
