@@ -55,27 +55,22 @@ def error_exit(msg):
 
 def info():
 	clear()
-	logging.debug(''.rjust(56, '#'))
-	logging.debug('#{0}#'.format(''.center(54)))
-	logging.debug('#{0}#'.format('Scroll'.center(54)))
-	logging.debug('#{0}#'.format('Developed by acidvegas in Python 3'.center(54)))
-	logging.debug('#{0}#'.format('https://github.com/acidvegas/scroll'.center(54)))
-	logging.debug('#{0}#'.format(''.center(54)))
-	logging.debug(''.rjust(56, '#'))
+	print(''.rjust(56, '#'))
+	print('#{0}#'.format(''.center(54)))
+	print('#{0}#'.format('Scroll'.center(54)))
+	print('#{0}#'.format('Developed by acidvegas in Python 3'.center(54)))
+	print('#{0}#'.format('https://github.com/acidvegas/scroll'.center(54)))
+	print('#{0}#'.format(''.center(54)))
+	print(''.rjust(56, '#'))
 
 def irc(msg):
 	logging.debug('[~] - ' + msg)
 
 def setup_logger():
-	logger = logging.getLogger()
-	logger.setLevel(logging.NOTSET)
-	format = logging.Formatter('%(asctime)s | %(message)s', '%I:%M:%S')
 	stream_handler = logging.StreamHandler(sys.stdout)
-	stream_handler.setFormatter(format)
-	logger.addHandler(stream_handler)
 	if config.settings.log:
-		log_file = os.path.join(os.path.join('data','logs'), 'scroll.log')
-		handler  = RotatingFileHandler(log_file, maxBytes=256000, backupCount=3)
-		handler.setFormatter(format)
-		logger.addHandler(handler)
-		logging.debug('Logging enabled.')
+		log_file     = os.path.join(os.path.join('data','logs'), 'scroll.log')
+		file_handler = RotatingFileHandler(log_file, maxBytes=256000, backupCount=3)
+		logging.basicConfig(level=logging.NOTSET, format='%(asctime)s | %(message)s', datefmt='%I:%M:%S', handlers=(file_handler,stream_handler))
+	else:
+		logging.basicConfig(level=logging.NOTSET, format='%(asctime)s | %(message)s', datefmt='%I:%M:%S', handlers=(stream_handler,))
