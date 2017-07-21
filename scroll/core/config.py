@@ -10,7 +10,7 @@ class connection:
 	ipv6    = False
 	ssl     = False
 	vhost   = None
-	channel = '#chats'
+	channel = '#chat'
 	key     = None
 
 class ident:
@@ -28,5 +28,6 @@ class login:
 	operator = None
 
 class settings:
-	admin_host = 'admin.host'
-	user_modes = None
+	admin = 'admin.host'
+	log   = False
+	modes = None

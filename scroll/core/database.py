@@ -13,24 +13,16 @@ db_file = os.path.join('data', 'scroll.db')
 db      = sqlite3.connect(db_file, check_same_thread=False)
 sql     = db.cursor()
 
-class Database:
-	def check():
-		tables = sql.execute('SELECT name FROM sqlite_master WHERE type=\'table\'').fetchall()
-		if len(tables):
-			return True
-		else:
-			return False
-
-	def create():
+def check():
+	tables = sql.execute('SELECT name FROM sqlite_master WHERE type=\'table\'').fetchall()
+	if not len(tables):
 		sql.execute('CREATE TABLE IGNORE (NICK TEXT NOT NULL, HOST TEXT NOT NULL);')
 		sql.execute('CREATE TABLE SETTINGS (SETTING TEXT NOT NULL, VALUE INTEGER NOT NULL);')
 		sql.execute('INSERT INTO SETTINGS (SETTING,VALUE) VALUES (?, ?)', ('cmd_throttle', 3))
 		sql.execute('INSERT INTO SETTINGS (SETTING,VALUE) VALUES (?, ?)', ('msg_throttle', 0.03))
 		sql.execute('INSERT INTO SETTINGS (SETTING,VALUE) VALUES (?, ?)', ('max_lines', 50))
-		sql.execute('INSERT INTO SETTINGS (SETTING,VALUE) VALUES (?, ?)', ('max_results', 5))
+		sql.execute('INSERT INTO SETTINGS (SETTING,VALUE) VALUES (?, ?)', ('max_results', 10))
 		db.commit()
-
-
 
 class Ignore:
 	def add(nick, host):

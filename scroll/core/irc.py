@@ -85,8 +85,8 @@ class IRC(object):
 			self.sendmsg(chan, '[{0}] {1}'.format(self.color('ERROR', red), msg))
 
 	def event_connect(self):
-		if config.settings.user_modes:
-			self.mode(config.ident.nickname, '+' + config.settings.user_modes)
+		if config.settings.modes:
+			self.mode(config.ident.nickname, '+' + config.settings.modes)
 		if config.login.nickserv:
 			self.identify(config.ident.nickname, config.login.nickserv)
 		if config.login.operator:
@@ -112,7 +112,7 @@ class IRC(object):
 		if chan == config.connection.channel or chan == '#scroll':
 			args = msg.split()
 			if args[0] == '.ascii' and host not in Ignore.hosts():
-				if time.time() - self.last < Settings.get('cmd_throttle') and host != config.settings.admin_host:
+				if time.time() - self.last < Settings.get('cmd_throttle') and host != config.settings.admin:
 					if not self.slow:
 						self.error(chan, 'Slow down nerd!')
 						self.slow = True
@@ -120,15 +120,13 @@ class IRC(object):
 					self.slow = False
 					if self.playing or self.auto:
 						if msg == '.ascii stop':
-							if self.auto:
-								self.auto = False
-							if not self.stopper:
-								self.stopper = True
+							self.auto    = False
+							self.stopper = True
 						else:
 							self.error(chan, 'Please wait for the current ASCII to finish playing!')
 					elif len(args) == 2:
 						option = args[1]
-						if option == 'auto' and host == config.settings.admin_host and not self.auto:
+						if option == 'auto' and host == config.settings.admin and not self.auto:
 							threading.Thread(target=self.auto, args=(chan,)).start()
 						else:
 							if option == 'random':
@@ -147,19 +145,19 @@ class IRC(object):
 								self.error(chan, 'Invalid file name.', 'Use ".ascii list" for a list of valid file names.')
 					elif len(args) == 3:
 						if args[1] == 'search':
-							query	   = args[2]
-							ascii_files = glob.glob(os.path.join(ascii_dir, f'**/*{query}*.txt'), recursive=True)
-							if ascii_files:
-								ascii_files = ascii_files[:Settings.get('max_results')]
-								for file_name in ascii_files:
-									count = ascii_files.index(file_name) + 1
+							query	= args[2]
+							results = glob.glob(os.path.join(ascii_dir, f'**/*{query}*.txt'), recursive=True)
+							if results:
+								results = results[:Settings.get('max_results')]
+								for file_name in results:
+									count = results.index(file_name) + 1
 									self.sendmsg(chan, '{0} {1}'.format(self.color('[{0}]'.format(count), pink), os.path.basename(file_name)))
 							else:
 								self.error(chan, 'No results found.')
 				self.last = time.time()
 
 	def event_private(self, nick, host, msg):
-		if host == config.settings.admin_host:
+		if host == config.settings.admin:
 			args = msg.split()
 			if len(args) == 1:
 				if msg == '.config':
@@ -204,7 +202,7 @@ class IRC(object):
 				if args[0] == '.ignore':
 					if args[1] == 'add':
 						nickname, hostname = args[2], args[3]
-						if hostname != config.settings.admin_host:
+						if hostname != config.settings.admin:
 							if len(nickname) <= 20 and len(hostname) <= 63:
 								if functions.CheckString.hostname(hostname) and functions.CheckString.nickname(nickname):
 									if hostname not in Ignore.hosts():
@@ -254,9 +252,9 @@ class IRC(object):
 			else:
 				self.event_message(nick, host, chan, msg)
 
-	def identify(self, nick, passwd):
-		self.sendmsg('nickserv', f'recover {nick} {passwd}')
-		self.sendmsg('nickserv', f'identify {nick} {passwd}')
+	def identify(self, nick, password):
+		self.sendmsg('nickserv', f'recover {nick} {password}')
+		self.sendmsg('nickserv', f'identify {nick} {password}')
 
 	def join_channel(self, chan, key=None):
 		if key:
@@ -282,8 +280,8 @@ class IRC(object):
 	def mode(self, target, mode):
 		self.raw(f'MODE {target} {mode}')
 
-	def oper(self, user, passwd):
-		self.raw(f'OPER {user} {passwd}')
+	def oper(self, user, password):
+		self.raw(f'OPER {user} {password}')
 
 	def part(self, chan, msg=None):
 		if msg:
@@ -312,11 +310,11 @@ class IRC(object):
 
 	def play(self, chan, data):
 		self.playing = True
-		for line in [line for line in data.splitlines() if line]:
+		for line in (line for line in data.splitlines() if line):
 			if self.stopper:
 				break
 			try:
-				self.sendmsg(chan, line[:400])
+				self.sendmsg(chan, line)
 			except Exception as ex:
 				debug.error('Error occured in the play function!', ex)
 				break
