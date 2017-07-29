@@ -7,17 +7,19 @@
 import string
 
 class CheckString:
-    def filename(data):
-        chars = string.ascii_letters + string.digits + '-_'
-        return all(c in chars for c in data)
-
     def hostname(data):
-        chars = string.ascii_letters + string.digits + '-.:'
-        return all(c in chars for c in data)
+		if len(data) <= 63:
+	        chars = string.ascii_letters + string.digits + '-.:'
+    	    return all(c in chars for c in data)
+		else:
+			return False
 
     def nickname(data):
-        chars = string.ascii_letters + string.digits + '`^-_[{]}|\\'
-        return all(c in chars for c in data)
+		if len(data) <= 20:
+	        chars = string.ascii_letters + string.digits + '`^-_[{]}|\\'
+	        return all(c in chars for c in data)
+		else:
+			return False
 
     def number(data):
         if len(data) <= 4:

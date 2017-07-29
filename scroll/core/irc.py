@@ -5,7 +5,6 @@
 # irc.py
 
 import glob
-import inspect
 import os
 import random
 import socket
@@ -76,7 +75,13 @@ class IRC(object):
 		if config.connection.vhost:
 			self.sock.bind((config.connection.vhost, 0))
 		if config.connection.ssl:
-			self.sock = ssl.wrap_socket(self.sock, keyfile=config.ssl.key, certfile=config.ssl.file)
+			ctx = ssl.create_default_context()
+			if config.cert.file:
+				ctx.load_cert_chain(config.cert.file, config.cert.key, config.cert.password)
+			if config.connection.ssl_verify:
+				ctx.verify_mode = ssl.CERT_REQUIRED
+				ctx.load_default_certs()
+			self.sock = ctx.wrap_socket(self.sock)
 
 	def error(self, chan, msg, reason=None):
 		if reason:
@@ -202,20 +207,14 @@ class IRC(object):
 				if args[0] == '.ignore':
 					if args[1] == 'add':
 						nickname, hostname = args[2], args[3]
-						if hostname != config.settings.admin:
-							if len(nickname) <= 20 and len(hostname) <= 63:
-								if functions.CheckString.hostname(hostname) and functions.CheckString.nickname(nickname):
-									if hostname not in Ignore.hosts():
-										Ignore.add(nickname, hostname)
-										self.sendmsg(nick, 'User {0} to the ignore list.'.format(self.color('added', green)))
-									else:
-										self.error(nick, 'Host is already on the ignore list.')
-								else:
-									self.error(nick, 'Nick/Host contains illegal characters.')
+						if functions.CheckString.hostname(hostname) and functions.CheckString.nickname(nickname):
+							if hostname not in Ignore.hosts():
+								Ignore.add(nickname, hostname)
+								self.sendmsg(nick, 'User {0} to the ignore list.'.format(self.color('added', green)))
 							else:
-								self.error(nick, 'Nick/Host is too long.')
+								self.error(nick, 'Host is already on the ignore list.')
 						else:
-							self.error(nick, 'Admin host can not be ignored.')
+							self.error(nick, 'Invalid Nick/Host.')
 					elif args[1] == 'del':
 						nickname, hostname = args[2], args[3]
 						if hostname in Ignore.hosts():

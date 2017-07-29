@@ -5,22 +5,24 @@
 # config.py
 
 class connection:
-	server  = 'irc.server.com'
-	port    = 6667
-	ipv6    = False
-	ssl     = False
-	vhost   = None
-	channel = '#chat'
-	key     = None
+	server     = 'irc.server.com'
+	port       = 6667
+	ipv6       = False
+	ssl        = False
+	ssl_verify = False
+	vhost      = None
+	channel    = '#chat'
+	key        = None
+
+class cert:
+	key      = None
+	file     = None
+	password = None
 
 class ident:
 	nickname = 'scroll'
 	username = 'scroll'
 	realname = 'ASCII Art Bot'
-
-class ssl:
-	key  = None
-	file = None
 
 class login:
 	network  = None
@@ -28,6 +30,6 @@ class login:
 	operator = None
 
 class settings:
-	admin = 'admin.host'
+	admin = 'change.me'
 	log   = False
 	modes = None

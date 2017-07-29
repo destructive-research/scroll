@@ -39,8 +39,6 @@ class Ignore:
 		sql.execute('DELETE FROM IGNORE WHERE NICK=? AND HOST=?', (nick, host))
 		db.commit()
 
-
-
 class Settings:
 	def get(setting):
 		return sql.execute('SELECT VALUE FROM SETTINGS WHERE SETTING=?', (setting,)).fetchone()[0]
