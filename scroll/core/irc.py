@@ -70,8 +70,15 @@ class IRC(object):
 			self.listen()
 
 	def create_socket(self):
-		family	= socket.AF_INET6 if config.connection.ipv6 else socket.AF_INET
-		self.sock = socket.socket(family, socket.SOCK_STREAM)
+		family = socket.AF_INET6 if config.connection.ipv6 else socket.AF_INET
+		if config.connection.proxy:
+			proxy_server, proxy_port = config.connection.proxy.split(':')
+			self.sock = socks.socksocket(family, socket.SOCK_STREAM)
+			self.sock.setblocking(0)
+			self.sock.settimeout(15)
+			self.sock.setproxy(socks.PROXY_TYPE_SOCKS5, proxy_server, int(proxy_port))
+		else:
+			self.sock = socket.socket(family, socket.SOCK_STREAM)
 		if config.connection.vhost:
 			self.sock.bind((config.connection.vhost, 0))
 		if config.connection.ssl:

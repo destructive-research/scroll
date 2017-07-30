@@ -7,6 +7,7 @@
 class connection:
 	server     = 'irc.server.com'
 	port       = 6667
+	proxy      = None
 	ipv6       = False
 	ssl        = False
 	ssl_verify = False
