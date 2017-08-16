@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Scroll
-# Developed by acidvegas in Python 3
+# Developed by acidvegas in Python
 # https://github.com/acidvegas/scroll
 # irc.py
 
@@ -13,9 +13,9 @@ import threading
 import time
 
 import config
+import database
 import debug
 import functions
-from database import Ignore, Settings
 
 # Globals
 ascii_dir = os.path.join('data', 'ascii')
@@ -123,8 +123,8 @@ class IRC(object):
 	def event_message(self, nick, host, chan, msg):
 		if chan == config.connection.channel or chan == '#scroll':
 			args = msg.split()
-			if args[0] == '.ascii' and host not in Ignore.hosts():
-				if time.time() - self.last < Settings.get('cmd_throttle') and host != config.settings.admin:
+			if args[0] == '.ascii' and host not in database.Ignore.hosts():
+				if time.time() - self.last < database.Settings.get('cmd_throttle') and host != config.settings.admin:
 					if not self.slow:
 						self.error(chan, 'Slow down nerd!')
 						self.slow = True
@@ -139,7 +139,7 @@ class IRC(object):
 					elif len(args) == 2:
 						option = args[1]
 						if option == 'auto' and host == config.settings.admin and not self.auto:
-							threading.Thread(target=self.auto, args=(chan,)).start()
+							threading.Thread(target=self.auto_play, args=(chan,)).start()
 						else:
 							if option == 'random':
 								ascii_file = random.choice(glob.glob(os.path.join(ascii_dir, '**/*.txt'), recursive=True))
@@ -147,7 +147,7 @@ class IRC(object):
 								ascii_file = (glob.glob(os.path.join(ascii_dir, f'**/{option}.txt'), recursive=True)[:1] or [None])[0]
 							if ascii_file:
 								data  = open(ascii_file, encoding='utf8', errors='replace').read()
-								if len(data.splitlines()) > Settings.get('max_lines') and chan != '#scroll':
+								if len(data.splitlines()) > database.Settings.get('max_lines') and chan != '#scroll':
 									self.error(chan, 'File is too big.', 'Take it to #scroll')
 								else:
 									if args[1] == 'random':
@@ -160,7 +160,7 @@ class IRC(object):
 							query	= args[2]
 							results = glob.glob(os.path.join(ascii_dir, f'**/*{query}*.txt'), recursive=True)
 							if results:
-								results = results[:Settings.get('max_results')]
+								results = results[:database.Settings.get('max_results')]
 								for file_name in results:
 									count = results.index(file_name) + 1
 									self.sendmsg(chan, '{0} {1}'.format(self.color('[{0}]'.format(count), pink), os.path.basename(file_name)))
@@ -173,12 +173,12 @@ class IRC(object):
 			args = msg.split()
 			if len(args) == 1:
 				if msg == '.config':
-					settings = Settings.read()
+					settings = database.Settings.read()
 					self.sendmsg(nick, '[{0}]'.format(self.color('Settings', purple)))
 					for setting in settings:
 						self.sendmsg(nick, '{0} = {1}'.format(self.color(setting[0], yellow), self.color(setting[1], grey)))
 				elif msg == '.ignore':
-					ignores = Ignore.read()
+					ignores = database.Ignore.read()
 					if ignores:
 						self.sendmsg(nick, '[{0}]'.format(self.color('Ignore List', purple)))
 						for user in ignores:
@@ -198,11 +198,11 @@ class IRC(object):
 			elif len(args) == 3:
 				if args[0] == '.config':
 					setting, value = args[1], args[2]
-					if functions.CheckString.number(value):
+					if functions.check_int(value):
 						value = functions.floatint(value)
 						if value >= 0:
-							if setting in Settings.settings():
-								Settings.update(setting, value)
+							if setting in database.Settings.settings():
+								database.Settings.update(setting, value)
 								self.sendmsg(nick, 'Change setting for {0} to {1}.'.format(self.color(setting, yellow), self.color(value, grey)))
 							else:
 								self.error(nick, 'Invalid config variable.')
@@ -214,18 +214,15 @@ class IRC(object):
 				if args[0] == '.ignore':
 					if args[1] == 'add':
 						nickname, hostname = args[2], args[3]
-						if functions.CheckString.hostname(hostname) and functions.CheckString.nickname(nickname):
-							if hostname not in Ignore.hosts():
-								Ignore.add(nickname, hostname)
-								self.sendmsg(nick, 'User {0} to the ignore list.'.format(self.color('added', green)))
-							else:
-								self.error(nick, 'Host is already on the ignore list.')
+						if hostname not in database.Ignore.hosts():
+							database.Ignore.add(nickname, hostname)
+							self.sendmsg(nick, 'User {0} to the ignore list.'.format(self.color('added', green)))
 						else:
-							self.error(nick, 'Invalid Nick/Host.')
+							self.error(nick, 'Host is already on the ignore list.')
 					elif args[1] == 'del':
 						nickname, hostname = args[2], args[3]
-						if hostname in Ignore.hosts():
-							Ignore.remove(nickname, hostname)
+						if hostname in database.Ignore.hosts():
+							database.Ignore.remove(nickname, hostname)
 							self.sendmsg(nick, 'User {0} from the ignore list.'.format(self.color('removed', red)))
 						else:
 							self.error(nick, 'User does not exist in the ignore list.')
@@ -237,7 +234,7 @@ class IRC(object):
 		args = data.split()
 		if data.startswith('ERROR :Closing Link:'):
 			raise Exception('Connection has closed.')
-		if args[0] == 'PING':
+		elif args[0] == 'PING':
 			self.raw('PONG ' + args[1][1:])
 		elif args[1] == '001':
 			self.event_connect()
@@ -259,7 +256,6 @@ class IRC(object):
 				self.event_message(nick, host, chan, msg)
 
 	def identify(self, nick, password):
-		self.sendmsg('nickserv', f'recover {nick} {password}')
 		self.sendmsg('nickserv', f'identify {nick} {password}')
 
 	def join_channel(self, chan, key=None):
@@ -295,7 +291,7 @@ class IRC(object):
 		else:
 			self.raw('PART ' + chan)
 
-	def auto(self, chan, files=None):
+	def auto_play(self, chan):
 		self.auto = True
 		while True:
 			if not self.auto:
@@ -309,7 +305,7 @@ class IRC(object):
 				debug.error('Error occured in the auto function!', ex)
 				break
 			else:
-				time.sleep(Settings.get('cmd_throttle'))
+				time.sleep(database.Settings.get('cmd_throttle'))
 				while self.playing:
 					time.sleep(1)
 		self.auto = False
@@ -325,7 +321,7 @@ class IRC(object):
 				debug.error('Error occured in the play function!', ex)
 				break
 			else:
-				time.sleep(Settings.get('msg_throttle'))
+				time.sleep(database.Settings.get('msg_throttle'))
 		self.stopper = False
 		self.playing = False
 

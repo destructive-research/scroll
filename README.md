@@ -4,6 +4,9 @@
 
 A bot to play ASCII art for the Internet Relay Chat (IRC) protocol.
 
+###### Requirements
+* [Python](https://www.python.org/downloads/) *(**Note:** This script was developed to be used with the latest version of Python.)*
+
 ###### Information
 The bot will join the `channel` defined in config.py and the `#scroll` channel.
 

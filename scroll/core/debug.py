@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Scroll
-# Developed by acidvegas in Python 3
+# Developed by acidvegas in Python
 # https://github.com/acidvegas/scroll
 # debug.py
 
@@ -55,13 +55,13 @@ def error_exit(msg):
 
 def info():
 	clear()
-	print(''.rjust(56, '#'))
+	print('#'*56)
 	print('#{0}#'.format(''.center(54)))
 	print('#{0}#'.format('Scroll'.center(54)))
-	print('#{0}#'.format('Developed by acidvegas in Python 3'.center(54)))
+	print('#{0}#'.format('Developed by acidvegas in Python'.center(54)))
 	print('#{0}#'.format('https://github.com/acidvegas/scroll'.center(54)))
 	print('#{0}#'.format(''.center(54)))
-	print(''.rjust(56, '#'))
+	print('#'*56)
 
 def irc(msg):
 	logging.debug('[~] - ' + msg)

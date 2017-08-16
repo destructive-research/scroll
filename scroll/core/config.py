@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Scroll
-# Developed by acidvegas in Python 3
+# Developed by acidvegas in Python
 # https://github.com/acidvegas/scroll
 # config.py
 
@@ -32,5 +32,6 @@ class login:
 
 class settings:
 	admin = 'change.me'
+	cmd_char = '.'
 	log   = False
 	modes = None
