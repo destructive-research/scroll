@@ -88,6 +88,9 @@ class IRC(object):
 			if config.connection.ssl_verify:
 				ctx.verify_mode = ssl.CERT_REQUIRED
 				ctx.load_default_certs()
+			else:
+				ctx.check_hostname = False
+				ctx.verify_mode = ssl.CERT_NONE
 			self.sock = ctx.wrap_socket(self.sock)
 
 	def error(self, chan, msg, reason=None):

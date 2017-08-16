@@ -32,6 +32,5 @@ class login:
 
 class settings:
 	admin = 'change.me'
-	cmd_char = '.'
 	log   = False
 	modes = None
