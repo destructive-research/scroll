@@ -146,12 +146,13 @@ class IRC(object):
 							else:
 								ascii_file = (glob.glob(os.path.join(ascii_dir, f'**/{option}.txt'), recursive=True)[:1] or [None])[0]
 							if ascii_file:
-								data  = open(ascii_file, encoding='utf8', errors='replace').read()
+								data = open(ascii_file, encoding='utf8', errors='replace').read()
 								if len(data.splitlines()) > database.Settings.get('max_lines') and chan != '#scroll':
 									self.error(chan, 'File is too big.', 'Take it to #scroll')
 								else:
-									if args[1] == 'random':
-										self.sendmsg(chan, os.path.basename(ascii_file))
+									name = ascii_file.split(ascii_dir)[1]
+									if args[1] == 'random' or '/' in name or '\\' in name:
+										self.sendmsg(chan, ascii_file.split(ascii_dir)[1])
 									threading.Thread(target=self.play, args=(chan, data)).start()
 							else:
 								self.error(chan, 'Invalid file name.', 'Use ".ascii list" for a list of valid file names.')
