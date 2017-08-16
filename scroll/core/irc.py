@@ -157,7 +157,7 @@ class IRC(object):
 								self.error(chan, 'Invalid file name.', 'Use ".ascii list" for a list of valid file names.')
 					elif len(args) == 3:
 						if args[1] == 'search':
-							query	= args[2]
+							query   = args[2]
 							results = glob.glob(os.path.join(ascii_dir, f'**/*{query}*.txt'), recursive=True)
 							if results:
 								results = results[:database.Settings.get('max_results')]
